@@ -12,6 +12,9 @@ struct ContentView: View {
     @State var selectedDate: Date? = Date()
 
     var body: some View {
-        CalendarView(selectedDate: $selectedDate)
+        CalendarView(
+            selectedDate: $selectedDate,
+            colorSelected: Color.red
+        )
     }
 }

@@ -9,7 +9,6 @@ import SwiftUI
 
 @main
 struct CalendarExampleApp: App {
-//    @State var selectedDate: Date? = Date()
 
     var body: some Scene {
         WindowGroup {

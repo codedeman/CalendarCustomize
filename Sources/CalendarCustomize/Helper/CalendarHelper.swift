@@ -9,6 +9,8 @@
 import Foundation
 
 struct CalendarHelper {
+    static let weekdaySymbols: [String] = Calendar.current.shortStandaloneWeekdaySymbols
+
     static func getCalendarGrid(for date: Date) -> [[Date?]] {
         // Create a calendar instance using the current calendar settings.
         var calendar = Calendar.current
@@ -54,4 +56,10 @@ struct CalendarHelper {
 
         return daysInGrid
     }
+
+    static func weekdaySymbol(for date: Date) -> String {
+         let calendar = Calendar.current
+         let weekdayIndex = calendar.component(.weekday, from: date) - 1
+         return weekdaySymbols[weekdayIndex]
+     }
 }

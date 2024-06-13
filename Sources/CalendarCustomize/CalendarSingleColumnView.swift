@@ -1,16 +1,27 @@
 import SwiftUI
 
+struct ScrollOffsetPreferenceKey: PreferenceKey {
+    typealias Value = CGFloat
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
 public struct CalendarSingleColumnView: View {
     @Binding public var selectedDate: Date?
     private var colorSelected: Color
     private var colorUnSelected: Color
     @State private var currentMonth: Date = Date()
     @State private var dates: [[Date?]] = []
-    @State private var scrollViewOffset: CGFloat = .zero
+    @State private var isLoadingNextMonth = false
+    @State private var hasAppeared = false
+    private let loadThreshold: CGFloat = 100 // Adjust this value to your needs
 
     public init(
         selectedDate: Binding<Date?>,
-        colorSelected: Color = .primary,
+        colorSelected: Color = .red,
         colorUnSelected: Color = .blue
     ) {
         self._selectedDate = selectedDate
@@ -22,42 +33,56 @@ public struct CalendarSingleColumnView: View {
     public var body: some View {
         VStack {
             ScrollView(.horizontal, showsIndicators: false) {
-                ScrollViewReader { scrollViewProxy in
-                    HStack(spacing: 10) {
-                        ForEach(Array(dates.joined()), id: \.self) { date in
-                            if let date = date {
-                                Text(Calendar.current.isDate(date, inSameDayAs: Date()) ? "Today" : "\(Calendar.current.component(.day, from: date))")
-                                    .frame(width: 50, height: 60)
-                                    .foregroundColor(self.dateTextColor(for: date))
-                                    .background(self.dateBackgroundColor(for: date))
-                                    .cornerRadius(15)
-                                    .onTapGesture {
-                                        selectedDate = date
-                                    }
+                HStack(spacing: 10) {
+                    ForEach(Array(dates.joined()), id: \.self) { date in
+                        if let date = date {
+                            VStack {
+                                Text(CalendarHelper.weekdaySymbol(for: date))
+                                    .font(.caption)
+                                    .foregroundColor(.black)
+                                    .fixedSize(horizontal: true, vertical: false)
+                                Text(dateDisplayText(for: date))
+                                    .padding(.horizontal)
+                                    .fixedSize(horizontal: true, vertical: true)
                             }
+                            .frame(height: 70)
+                            .foregroundColor(dateTextColor(for: date))
+                            .background(dateBackgroundColor(for: date))
+                            .cornerRadius(15)
+                            .padding(.vertical, 5)
+                            .onTapGesture {
+                                selectedDate = date
+                            }
+                            .frame(minWidth: 0, maxWidth: .infinity)
                         }
                     }
-                    .background(GeometryReader { geometry -> Color in
-                        let minX = geometry.frame(in: .named("scrollView")).minX
-                        DispatchQueue.main.async {
-                            if minX < scrollViewOffset {
-                                // The scroll view is scrolling right
-                                if let lastDate = dates.joined().last, lastDate == dates.joined().last {
-                                    loadNextMonth()
-                                }
-                            }
-                            scrollViewOffset = minX
-                        }
-                        return Color.clear
-                    })
+                    GeometryReader { geometry in
+                        Color.clear.preference(key: ScrollOffsetPreferenceKey.self, value: geometry.frame(in: .global).maxX)
+                    }
+                    .frame(width: 1, height: 1)
                 }
-                .coordinateSpace(name: "scrollView")
+                .padding(.horizontal)
+            }
+            .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
+                guard hasAppeared else { return }
+                let contentWidth = UIScreen.main.bounds.width // Adjust this if you have a different content width
+                let offsetThreshold = contentWidth - loadThreshold
+                if !isLoadingNextMonth && value >= offsetThreshold {
+                    loadNextMonth()
+                }
             }
             Spacer()
         }
         .onAppear {
             updateDates()
+            hasAppeared = true
         }
+    }
+
+    private func dateDisplayText(for date: Date) -> String {
+        let day = Calendar.current.component(.day, from: date)
+        let month = Calendar.current.shortStandaloneMonthSymbols[Calendar.current.component(.month, from: date)-1]
+        return Calendar.current.isDate(date, inSameDayAs: Date()) ? "Today" : "\(day) \(month)"
     }
 
     private func dateTextColor(for date: Date) -> Color {
@@ -81,11 +106,18 @@ public struct CalendarSingleColumnView: View {
     }
 
     private func loadNextMonth() {
+        guard !isLoadingNextMonth else { return }
+        isLoadingNextMonth = true
         guard let nextMonth = Calendar.current.date(byAdding: .month, value: 1, to: currentMonth) else { return }
+        print("Loading next month: \(nextMonth)")
         currentMonth = nextMonth
         updateDates()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { // Simulate loading delay
+            isLoadingNextMonth = false
+        }
     }
 }
+
 
 struct CalendarSingleColumnView_Previews: PreviewProvider {
     @State static var selectedDate: Date? = Date()

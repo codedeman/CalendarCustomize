@@ -62,4 +62,11 @@ struct CalendarHelper {
          let weekdayIndex = calendar.component(.weekday, from: date) - 1
          return weekdaySymbols[weekdayIndex]
      }
+
+    static func dateDisplayText(for date: Date) -> String {
+        let day = Calendar.current.component(.day, from: date)
+        let month = Calendar.current.shortStandaloneMonthSymbols[Calendar.current.component(.month, from: date) - 1]
+        return Calendar.current.isDate(date, inSameDayAs: Date()) ? "Today" : "\(day) \(month)"
+    }
+
 }

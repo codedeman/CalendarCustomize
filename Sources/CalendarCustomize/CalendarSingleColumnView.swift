@@ -4,7 +4,10 @@ struct ScrollOffsetPreferenceKey: PreferenceKey {
     typealias Value = CGFloat
     static var defaultValue: CGFloat = 0
 
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+    static func reduce(
+        value: inout CGFloat,
+        nextValue: () -> CGFloat
+    ) {
         value = nextValue()
     }
 }
@@ -23,12 +26,15 @@ public struct CalendarSingleColumnView: View {
     public init(
         selectedDate: Binding<Date?>,
         colorSelected: Color = .red,
-        colorUnSelected: Color = .blue
+        colorUnSelected: Color = .blue.opacity(0.5)
     ) {
         self._selectedDate = selectedDate
         self.colorSelected = colorSelected
         self.colorUnSelected = colorUnSelected
-        self._dates = State(initialValue: CalendarHelper.getCalendarGrid(for: selectedDate.wrappedValue ?? Date()))
+        self._dates = State(
+            initialValue: CalendarHelper.getCalendarGrid(for: selectedDate.wrappedValue ?? Date()
+                                                        )
+        )
     }
 
     public var body: some View {
@@ -38,9 +44,13 @@ public struct CalendarSingleColumnView: View {
                     HStack(spacing: 10) {
                         ForEach(Array(dates.joined()), id: \.self) { date in
                             if let date = date {
-                                DateView(date: date, isSelected: Calendar.current.isDate(date, inSameDayAs: selectedDate ?? Date()), colorSelected: colorSelected, colorUnSelected: colorUnSelected) {
+                                DateView(
+                                    date: date,
+                                    isSelected: Calendar.current.isDate(date, inSameDayAs: selectedDate ?? Date()),
+                                    colorSelected: colorSelected,
+                                    colorUnSelected: colorUnSelected
+                                ) {
                                     selectedDate = date
-                                    proxy.scrollTo(date, anchor: .leading)
                                 }
                                 .id(date)
                             }
@@ -48,7 +58,10 @@ public struct CalendarSingleColumnView: View {
 
                         GeometryReader { geometry in
                             Color.clear
-                                .preference(key: ScrollOffsetPreferenceKey.self, value: geometry.frame(in: .global).maxX)
+                                .preference(
+                                    key: ScrollOffsetPreferenceKey.self,
+                                    value: geometry.frame(in: .global).maxX
+                                )
                         }
                         .frame(width: 1, height: 1)
                     }
@@ -57,6 +70,8 @@ public struct CalendarSingleColumnView: View {
                         if isViewLoaded && !hasScrolledToEnd && maxX < UIScreen.main.bounds.width {
                             loadNextMonth()
                             hasScrolledToEnd = true
+                        } else {
+                            print("Scroll to right")
                         }
                     }
                     .onChange(of: dates) { _ in
@@ -67,7 +82,6 @@ public struct CalendarSingleColumnView: View {
                     }
                 }
             }
-            Spacer()
         }
         .onAppear {
             updateDates()
@@ -91,29 +105,6 @@ public struct CalendarSingleColumnView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             isLoadingNextMonth = false
         }
-    }
-}
-
-struct DateView: View {
-    let date: Date
-    let isSelected: Bool
-    let colorSelected: Color
-    let colorUnSelected: Color
-    let action: () -> Void
-
-    var body: some View {
-        VStack {
-            Text(CalendarHelper.weekdaySymbol(for: date))
-                .font(.caption)
-                .foregroundColor(.black)
-            Text(CalendarHelper.dateDisplayText(for: date))
-                .padding(.horizontal)
-        }
-        .frame(height: 70)
-        .foregroundColor(isSelected ? .white : .black)
-        .background(isSelected ? colorSelected : colorUnSelected)
-        .cornerRadius(15)
-        .onTapGesture(perform: action)
     }
 }
 

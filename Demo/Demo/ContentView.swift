@@ -14,6 +14,7 @@ struct ContentView: View {
     var body: some View {
         VStack {
             CalendarSingleColumnView(selectedDate: $selectedDate)
+            Spacer()
         }
         .padding()
     }

@@ -1,89 +1,110 @@
 import SwiftUI
 
+struct ScrollOffsetPreferenceKey: PreferenceKey {
+    typealias Value = CGFloat
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(
+        value: inout CGFloat,
+        nextValue: () -> CGFloat
+    ) {
+        value = nextValue()
+    }
+}
+
 public struct CalendarSingleColumnView: View {
     @Binding public var selectedDate: Date?
     private var colorSelected: Color
     private var colorUnSelected: Color
     @State private var currentMonth: Date = Date()
     @State private var dates: [[Date?]] = []
-    @State private var scrollViewOffset: CGFloat = .zero
+    @State private var isLoadingNextMonth = false
+    @State private var hasLoadedInitially = false
+    @State private var hasScrolledToEnd = false
+    @State private var isViewLoaded = false
 
     public init(
         selectedDate: Binding<Date?>,
-        colorSelected: Color = .primary,
-        colorUnSelected: Color = .blue
+        colorSelected: Color = .red,
+        colorUnSelected: Color = .blue.opacity(0.5)
     ) {
         self._selectedDate = selectedDate
         self.colorSelected = colorSelected
         self.colorUnSelected = colorUnSelected
-        self._dates = State(initialValue: CalendarHelper.getCalendarGrid(for: selectedDate.wrappedValue ?? Date()))
+        self._dates = State(
+            initialValue: CalendarHelper.getCalendarGrid(for: selectedDate.wrappedValue ?? Date()
+                                                        )
+        )
     }
 
     public var body: some View {
         VStack {
-            ScrollView(.horizontal, showsIndicators: false) {
-                ScrollViewReader { scrollViewProxy in
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
                         ForEach(Array(dates.joined()), id: \.self) { date in
                             if let date = date {
-                                Text(Calendar.current.isDate(date, inSameDayAs: Date()) ? "Today" : "\(Calendar.current.component(.day, from: date))")
-                                    .frame(width: 50, height: 60)
-                                    .foregroundColor(self.dateTextColor(for: date))
-                                    .background(self.dateBackgroundColor(for: date))
-                                    .cornerRadius(15)
-                                    .onTapGesture {
-                                        selectedDate = date
-                                    }
+                                DateView(
+                                    date: date,
+                                    isSelected: Calendar.current.isDate(date, inSameDayAs: selectedDate ?? Date()),
+                                    colorSelected: colorSelected,
+                                    colorUnSelected: colorUnSelected
+                                ) {
+                                    selectedDate = date
+                                }
+                                .id(date)
                             }
+                        }
+
+                        GeometryReader { geometry in
+                            Color.clear
+                                .preference(
+                                    key: ScrollOffsetPreferenceKey.self,
+                                    value: geometry.frame(in: .global).maxX
+                                )
+                        }
+                        .frame(width: 1, height: 1)
+                    }
+                    .padding(.horizontal)
+                    .onPreferenceChange(ScrollOffsetPreferenceKey.self) { maxX in
+                        if isViewLoaded && !hasScrolledToEnd && maxX < UIScreen.main.bounds.width {
+                            loadNextMonth()
+                            hasScrolledToEnd = true
+                        } else {
+                            print("Scroll to right")
                         }
                     }
-                    .background(GeometryReader { geometry -> Color in
-                        let minX = geometry.frame(in: .named("scrollView")).minX
-                        DispatchQueue.main.async {
-                            if minX < scrollViewOffset {
-                                // The scroll view is scrolling right
-                                if let lastDate = dates.joined().last, lastDate == dates.joined().last {
-                                    loadNextMonth()
-                                }
-                            }
-                            scrollViewOffset = minX
+                    .onChange(of: dates) { _ in
+                        hasScrolledToEnd = false
+                        if let firstDate = dates.joined().compactMap({ $0 }).first {
+                            proxy.scrollTo(firstDate, anchor: .leading)
                         }
-                        return Color.clear
-                    })
+                    }
                 }
-                .coordinateSpace(name: "scrollView")
             }
-            Spacer()
         }
         .onAppear {
             updateDates()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                isViewLoaded = true
+            }
         }
     }
 
-    private func dateTextColor(for date: Date) -> Color {
-        if let selectedDate = selectedDate, Calendar.current.isDate(date, inSameDayAs: selectedDate) {
-            return .white
-        } else {
-            return .black
-        }
-    }
-
-    private func dateBackgroundColor(for date: Date) -> Color {
-        if let selectedDate = selectedDate, Calendar.current.isDate(date, inSameDayAs: selectedDate) {
-            return colorSelected
-        } else {
-            return colorUnSelected
-        }
-    }
 
     private func updateDates() {
         dates = CalendarHelper.getCalendarGrid(for: currentMonth)
     }
 
     private func loadNextMonth() {
+        guard !isLoadingNextMonth else { return }
+        isLoadingNextMonth = true
         guard let nextMonth = Calendar.current.date(byAdding: .month, value: 1, to: currentMonth) else { return }
         currentMonth = nextMonth
         updateDates()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            isLoadingNextMonth = false
+        }
     }
 }
 

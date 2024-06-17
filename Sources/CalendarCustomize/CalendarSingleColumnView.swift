@@ -70,15 +70,10 @@ public struct CalendarSingleColumnView: View {
                         if isViewLoaded && !hasScrolledToEnd && maxX < UIScreen.main.bounds.width {
                             loadNextMonth()
                             hasScrolledToEnd = true
-                        } else {
-                            print("Scroll to right")
                         }
                     }
                     .onChange(of: dates) { _ in
                         hasScrolledToEnd = false
-                        if let firstDate = dates.joined().compactMap({ $0 }).first {
-                            proxy.scrollTo(firstDate, anchor: .leading)
-                        }
                     }
                 }
             }
@@ -93,7 +88,8 @@ public struct CalendarSingleColumnView: View {
 
 
     private func updateDates() {
-        dates = CalendarHelper.getCalendarGrid(for: currentMonth)
+        let newdate = CalendarHelper.getCalendarGrid(for: currentMonth)
+        dates.append(contentsOf: newdate)
     }
 
     private func loadNextMonth() {
@@ -112,6 +108,8 @@ struct CalendarSingleColumnView_Previews: PreviewProvider {
     @State static var selectedDate: Date? = Date()
 
     static var previews: some View {
-        CalendarSingleColumnView(selectedDate: $selectedDate)
+        CalendarSingleColumnView(
+            selectedDate: $selectedDate
+        )
     }
 }

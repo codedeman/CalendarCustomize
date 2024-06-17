@@ -13,7 +13,7 @@ struct Items: Identifiable {
 }
 
 struct ContentView: View {
-    @State private var selectedDate: Date?
+    @State private var selectedDate: Date? = Date()
     var items: [Items] = [
         .init(
             title: "Calendar Basic",

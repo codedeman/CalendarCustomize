@@ -32,8 +32,9 @@ public struct CalendarSingleColumnView: View {
         self.colorSelected = colorSelected
         self.colorUnSelected = colorUnSelected
         self._dates = State(
-            initialValue: CalendarHelper.getCalendarGrid(for: selectedDate.wrappedValue ?? Date()
-                                                        )
+            initialValue: CalendarHelper.getCalendarGrid(
+                for: selectedDate.wrappedValue ?? Date()
+            )
         )
     }
 
@@ -95,7 +96,13 @@ public struct CalendarSingleColumnView: View {
     private func loadNextMonth() {
         guard !isLoadingNextMonth else { return }
         isLoadingNextMonth = true
-        guard let nextMonth = Calendar.current.date(byAdding: .month, value: 1, to: currentMonth) else { return }
+
+        guard let nextMonth = Calendar.current.date(
+            byAdding: .month,
+            value: 1,
+            to: currentMonth
+        ) else { return }
+
         currentMonth = nextMonth
         updateDates()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {

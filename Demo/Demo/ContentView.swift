@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 import CalendarCustomize
 
 enum CalendarType {
@@ -6,20 +7,29 @@ enum CalendarType {
     case basic
 }
 
+class CalendarViewModel: ObservableObject {
+    @Published var selectedDate: Date? = Date()
+
+    func resetSelectedDate() {
+        selectedDate = Date()
+    }
+}
+
 struct Items: Identifiable {
-    var id: UUID = UUID() // This will give each instance a unique id by default
-    var title: String = ""
-    var type: CalendarType = .basic
+    var id = UUID()
+    var title: String
+    var type: CalendarType
 }
 
 struct ContentView: View {
-    @State private var selectedDate: Date? = Date()
+    @StateObject private var viewModel = CalendarViewModel()
+
     var items: [Items] = [
-        .init(
+        Items(
             title: "Calendar Basic",
             type: .basic
         ),
-        .init(
+        Items(
             title: "Calendar Single Column",
             type: .single
         )
@@ -30,19 +40,30 @@ struct ContentView: View {
             VStack {
                 List {
                     ForEach(items) { item in
-                        if item.type == .basic {
-                            NavigationLink(destination: CalendarViewBasic(selectedDate: $selectedDate)) {
-                                Text(item.title)
-                            }
-                        } else {
-                            NavigationLink(destination: CalendarSingleColumnView(selectedDate: $selectedDate)) {
-                                Text(item.title)
-                            }
+                        NavigationLink(
+                            destination: destinationView(for: item.type)
+                                .environmentObject(viewModel)
+                                .onDisappear(perform: {
+                                    viewModel.resetSelectedDate()
+                                })
+                        ) {
+                            Text(item.title)
                         }
                     }
                 }
             }
             .padding()
+            .navigationTitle("Calendar Options")
+        }
+    }
+
+    @ViewBuilder
+    private func destinationView(for type: CalendarType) -> some View {
+        switch type {
+        case .basic:
+            CalendarViewBasic(selectedDate: $viewModel.selectedDate)
+        case .single:
+            CalendarSingleColumnView(selectedDate: $viewModel.selectedDate)
         }
     }
 }

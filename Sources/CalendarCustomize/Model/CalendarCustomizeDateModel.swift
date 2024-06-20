@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct DateModel: Identifiable,Equatable {
+struct CalendarCustomizeDateModel: Identifiable,Equatable {
     let id: UUID = UUID()
     let date: Date?
 }

@@ -5,13 +5,15 @@ import CalendarCustomize
 enum CalendarType {
     case single
     case basic
+    case mutiple
 }
 
 class CalendarViewModel: ObservableObject {
     @Published var selectedDate: Date? = Date()
-
+    @Published var selectedEndDate: Date? = nil
     func resetSelectedDate() {
         selectedDate = Date()
+        selectedEndDate = nil
     }
 }
 
@@ -32,6 +34,10 @@ struct ContentView: View {
         Items(
             title: "Calendar Single Column",
             type: .single
+        ),
+        Items(
+            title: "Calendar Mutiple Select",
+            type: .mutiple
         )
     ]
 
@@ -61,10 +67,20 @@ struct ContentView: View {
     private func destinationView(for type: CalendarType) -> some View {
         switch type {
         case .basic:
-            CalendarViewBasic(selectedDate: $viewModel.selectedDate)
+            CalendarCustomizeViewBasic(
+                selectedDate: $viewModel.selectedDate,
+                selectedEndDate: .constant(nil)
+            )
+        case .mutiple:
+            CalendarCustomizeViewBasic(
+                selectedDate: $viewModel.selectedDate,
+                selectedEndDate: $viewModel.selectedEndDate,
+                calendarType: .multiple
+            )
         case .single:
-            CalendarSingleColumnView(selectedDate: $viewModel.selectedDate)
+            CalendarCustomizeSingleColumnView(selectedDate: $viewModel.selectedDate)
         }
+
     }
 }
 

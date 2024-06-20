@@ -1,21 +1,33 @@
 // The Swift Programming Language
-// https://docs.swift.org/swift-book
 
 import SwiftUI
 
-public struct CalendarViewBasic: View {
-    @Binding public var selectedDate: Date?
+public enum CalendarCustomizeType {
+    case normal
+    case multiple
+}
+
+public struct CalendarCustomizeViewBasic: View {
+    //MARK: Property
+    @Binding public var selectedEndDate: Date?
+    @Binding public var selectedStartDate: Date?
+
     private var colorSelected: Color
     private var colorUnSelected: Color
+    private var calendarType: CalendarCustomizeType
 
     public init(
         selectedDate: Binding<Date?>,
+        selectedEndDate: Binding<Date?>,
         colorSelected: Color = .blue,
-        colorUnSelected: Color = .clear
+        colorUnSelected: Color = .clear,
+        calendarType: CalendarCustomizeType = .normal
     ) {
         self.colorSelected = colorSelected
         self.colorUnSelected = colorUnSelected
-        self._selectedDate = selectedDate
+        self.calendarType = calendarType
+        self._selectedStartDate = selectedDate
+        self._selectedEndDate = selectedEndDate
     }
 
     public var body: some View {
@@ -23,16 +35,16 @@ public struct CalendarViewBasic: View {
             HStack(alignment: .center) {
                 Spacer()
                 Button(action: {
-                    selectedDate = Calendar.current.date(
+                    selectedStartDate = Calendar.current.date(
                         byAdding: .month,
                         value: -1,
-                        to: selectedDate ?? Date()
+                        to: selectedStartDate ?? Date()
                     )
                 }) {
                     Image(systemName: "chevron.left")
                         .foregroundColor(.gray)
                 }
-                Text(selectedDate.map {
+                Text(selectedStartDate.map {
                     DateFormatter().monthSymbols[
                         Calendar.current.component(
                             .month,
@@ -44,10 +56,10 @@ public struct CalendarViewBasic: View {
                     .font(.title2)
                     .fontWeight(.bold)
                 Button(action: {
-                    selectedDate = Calendar.current.date(
+                    selectedStartDate = Calendar.current.date(
                         byAdding: .month,
                         value: 1,
-                        to: selectedDate ?? Date()
+                        to: selectedStartDate ?? Date()
                     )
                 }) {
                     Image(systemName: "chevron.right")
@@ -57,13 +69,37 @@ public struct CalendarViewBasic: View {
 
             }.padding(.top)
 
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7)) {
-                ForEach(CalendarHelper.getCalendarGrid(for: selectedDate ?? Date()), id: \.self) { row in
+                LazyVGrid(
+                    columns: Array(
+                        repeating: GridItem(.flexible()),
+                        count: 7
+                    )
+                ) {
+                ForEach(CalendarCustomizeHelper.getCalendarGrid(for: selectedStartDate ?? Date()), id: \.self) { row in
                     ForEach(row, id: \.self) { date in
                         if let date = date {
+                            let isSelected = Calendar.current.isDate(
+                                date,
+                                inSameDayAs: selectedStartDate ?? Date()
+                            ) || Calendar.current.isDate(
+                                date,
+                                inSameDayAs: selectedEndDate ?? Date()
+                            )
+                            let isInRange = (
+                                selectedStartDate != nil && selectedEndDate != nil
+                            ) && (
+                                date  >= selectedStartDate! && date <= selectedEndDate!
+                            )
+
                             Text(
-                                Calendar.current.isDate(date, inSameDayAs: Date()) ? "Today" : String(
-                                    Calendar.current.component(.day, from: date)
+                                Calendar.current.isDate(
+                                    date,
+                                    inSameDayAs: Date()
+                                ) ? "Today" : String(
+                                    Calendar.current.component(
+                                        .day,
+                                        from: date
+                                    )
                                 )
                             )
                             .frame(
@@ -71,16 +107,48 @@ public struct CalendarViewBasic: View {
                                 height: 60
                             )
                             .foregroundColor(
-                                selectedDate.flatMap {
-                                    Calendar.current.isDate(date, inSameDayAs: $0) ? .white : .black } ?? .black)
-                            .background(selectedDate.flatMap { Calendar.current.isDate(date, inSameDayAs: $0) ? colorSelected : colorUnSelected } ?? .clear)
+                                isSelected ? .white :. black
+                            )
+                            .background(
+                                isSelected ? colorSelected : (isInRange ? colorSelected.opacity(0.3) : colorUnSelected)
+                            )
                             .cornerRadius(15)
                             .onTapGesture {
-                                selectedDate = date
+                                print("Selected date: \(date)")
+                                if calendarType == .normal {
+                                    selectedStartDate = date
+                                    selectedEndDate = date
+                                } else {
+                                    if selectedStartDate == nil {
+                                        selectedStartDate = date
+                                        selectedEndDate = nil
+                                    } else if selectedEndDate == nil {
+                                        if date < selectedStartDate! {
+                                            selectedEndDate = nil
+                                            selectedStartDate = date
+                                        } else {
+                                            selectedEndDate = date
+                                        }
+                                    } else {
+                                        if date < selectedStartDate! {
+                                            selectedStartDate = date
+                                            selectedEndDate = nil
+                                        } else if date > selectedEndDate! {
+                                            selectedEndDate = date
+                                        } else {
+                                            selectedStartDate = date
+                                            selectedEndDate = nil
+                                        }
+                                    }
+                                }
+                                print("Start Date: \(String(describing: selectedStartDate)), End Date: \(String(describing: selectedEndDate))")
                             }
+
                         } else {
                             Text("")
-                                .frame(maxWidth: .infinity)
+                                .frame(
+                                    maxWidth: .infinity
+                                )
                         }
                     }
                 }.frame(maxHeight: .infinity)
@@ -92,9 +160,14 @@ public struct CalendarViewBasic: View {
 }
 
 struct CalendarView_Previews: PreviewProvider {
-    @State static var selectedDate: Date? = Date()
+    @State static var selectedStartDate: Date? = Date()
+    @State static var selectedEndDate: Date?
 
     static var previews: some View {
-        CalendarViewBasic(selectedDate: $selectedDate)
+        CalendarCustomizeViewBasic(
+            selectedDate: $selectedStartDate,
+            selectedEndDate: $selectedEndDate,
+            calendarType: .multiple
+        )
     }
 }

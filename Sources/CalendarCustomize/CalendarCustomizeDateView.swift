@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct DateView: View {
+struct CalendarCustomizeDateView: View {
     let date: Date
     let isSelected: Bool
     let colorSelected: Color
@@ -16,10 +16,10 @@ struct DateView: View {
 
     var body: some View {
         VStack {
-            Text(CalendarHelper.weekdaySymbol(for: date))
+            Text(CalendarCustomizeHelper.weekdaySymbol(for: date))
                 .font(.caption)
                 .foregroundColor(.black)
-            Text(CalendarHelper.dateDisplayText(for: date))
+            Text(CalendarCustomizeHelper.dateDisplayText(for: date))
                 .padding(.horizontal)
         }
         .frame(height: 70)

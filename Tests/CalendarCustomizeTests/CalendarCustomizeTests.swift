@@ -8,7 +8,7 @@ final class CalendarCustomizeTests: XCTestCase {
         let date = Date() // Use any specific date for testing
 
         // Call the method to get the calendar grid
-        let calendarGrid = CalendarHelper.getCalendarGrid(for: date)
+        let calendarGrid = CalendarCustomizeHelper.getCalendarGrid(for: date)
 
         // Assert that the grid is not empty and has the expected structure
         XCTAssertFalse(calendarGrid.isEmpty, "Calendar grid should not be empty")

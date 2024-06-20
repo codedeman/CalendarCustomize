@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ScrollOffsetPreferenceKey: PreferenceKey {
+struct CalendarCustomizeScrollOffsetPreferenceKey: PreferenceKey {
     typealias Value = CGFloat
     static var defaultValue: CGFloat = 0
 

@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct CalendarHelper {
+struct CalendarCustomizeHelper {
     static let weekdaySymbols: [String] = Calendar.current.shortStandaloneWeekdaySymbols
 
     static func getCalendarGrid(for date: Date) -> [[Date?]] {

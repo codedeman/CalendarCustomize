@@ -1,27 +1,16 @@
 import SwiftUI
 
-struct ScrollOffsetPreferenceKey: PreferenceKey {
-    typealias Value = CGFloat
-    static var defaultValue: CGFloat = 0
-
-    static func reduce(
-        value: inout CGFloat,
-        nextValue: () -> CGFloat
-    ) {
-        value = nextValue()
-    }
-}
-
 public struct CalendarSingleColumnView: View {
+
     @Binding public var selectedDate: Date?
     private var colorSelected: Color
     private var colorUnSelected: Color
     @State private var currentMonth: Date = Date()
-    @State private var dates: [[Date?]] = []
     @State private var isLoadingNextMonth = false
     @State private var hasLoadedInitially = false
     @State private var hasScrolledToEnd = false
     @State private var isViewLoaded = false
+    @State private var dates: [DateModel] = []
 
     public init(
         selectedDate: Binding<Date?>,
@@ -34,8 +23,9 @@ public struct CalendarSingleColumnView: View {
         self._dates = State(
             initialValue: CalendarHelper.getCalendarGrid(
                 for: selectedDate.wrappedValue ?? Date()
-            )
+            ).flatMap { $0.map { DateModel(date: $0) } }
         )
+
     }
 
     public var body: some View {
@@ -43,8 +33,8 @@ public struct CalendarSingleColumnView: View {
             ScrollViewReader { proxy in
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
-                        ForEach(Array(dates.joined()), id: \.self) { date in
-                            if let date = date {
+                        ForEach(dates) { dateModel in
+                            if let date = dateModel.date {
                                 DateView(
                                     date: date,
                                     isSelected: Calendar.current.isDate(date, inSameDayAs: selectedDate ?? Date()),
@@ -90,7 +80,9 @@ public struct CalendarSingleColumnView: View {
 
     private func updateDates() {
         let newdate = CalendarHelper.getCalendarGrid(for: currentMonth)
-        dates.append(contentsOf: newdate)
+        dates.append(contentsOf: newdate.flatMap{
+            $0.map{DateModel(date: $0)}
+        })
     }
 
     private func loadNextMonth() {
@@ -113,7 +105,6 @@ public struct CalendarSingleColumnView: View {
 
 struct CalendarSingleColumnView_Previews: PreviewProvider {
     @State static var selectedDate: Date? = Date()
-
     static var previews: some View {
         CalendarSingleColumnView(
             selectedDate: $selectedDate

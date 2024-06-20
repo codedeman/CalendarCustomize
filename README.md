@@ -11,7 +11,9 @@ The project consists of the following main components:
 - `CalendarView` is a SwiftUI `View` that displays a grid of dates representing a calendar month.
 - Users can navigate between months using navigation buttons.
 - Dates within the calendar can be selected by tapping on them.
-<img src="https://raw.githubusercontent.com/codedeman/Calendar/main/ImageDemo/Simulator%20Screenshot%20-%20iPhone%2015%20-%202024-05-24%20at%2012.29.03.png" alt="CalendarView Example" width="600"/>
+
+![Demo](https://raw.githubusercontent.com/codedeman/Calendar/main/ImageDemo/Simulator%20Screen%20Recording%20-%20iPhone%2015%20-%202024-06-20%20at%2014.29.23.gif)
+
 
 ### Helper Functions
 - `getCalendarGrid(for date: Date) -> [[Date?]]`: This function generates a grid of dates for a given month, starting from the provided date.

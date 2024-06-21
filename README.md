@@ -1,8 +1,8 @@
 
-# CalendarView Project
+# CalendarCustomize Project
 
 ## Overview
-The CalendarView project is a Swift package containing a SwiftUI component for displaying a calendar grid. It allows users to navigate between months and select dates within the calendar.
+The CalendarCustomize project is a Swift package that provides a versatile SwiftUI component for displaying a calendar grid, including a single column layout option. This component allows seamless navigation between months and enables users to select dates, enhancing SwiftUI applications with robust calendar functionalities and flexible UI customization.
 
 ## Components
 The project consists of the following main components:
@@ -19,12 +19,13 @@ The project consists of the following main components:
 - `getCalendarGrid(for date: Date) -> [[Date?]]`: This function generates a grid of dates for a given month, starting from the provided date.
 
 ## Usage
-To use the `CalendarView` component in your SwiftUI project:
-1. Import the `CalendarUI` module.
+To use the `CalendarCustomize` component in your SwiftUI project:
+1. Import the `CalendarCustomize` module.
 2. Initialize a `Binding<Date?>` variable to hold the selected date.
 3. Add a `CalendarView` instance to your SwiftUI view hierarchy, passing the `Binding<Date?>` variable to it.
 
 ## Checklist ✅
+- [X] Provide single column calendar and basic calendar.
 - [X] Initialize a `Binding<Date?>` variable in your SwiftUI view.
 - [X] Add a `CalendarView` instance to your view hierarchy.
 - [X] Implement navigation buttons to switch between months.
@@ -38,12 +39,28 @@ To use the `CalendarView` component in your SwiftUI project:
 Example:
 ```swift
 import SwiftUI
-import CalendarUI
+import CalendarCustomize
 
 struct ContentView: View {
     @State private var selectedDate: Date?
 
     var body: some View {
-        CalendarView(selectedDate: $selectedDate)
+        CalendarViewBasic(selectedDate: $selectedDate)
     }
 }
+```
+
+```swift
+import SwiftUI
+import CalendarCustomize
+
+struct ContentView: View {
+    @State private var selectedDate: Date?
+
+    var body: some View {
+        CalendarSingleColumnView(selectedDate: $selectedDate)
+    }
+}
+```
+
+

@@ -2,33 +2,30 @@
 
 import SwiftUI
 
-public enum CalendarCustomizeType {
-    case normal
-    case multiple
-}
-
 public struct CalendarCustomizeViewBasic: View {
 
     //MARK: Property
     @Binding public var selectedEndDate: Date?
     @Binding public var selectedStartDate: Date?
-
     private var colorSelected: Color
     private var colorUnSelected: Color
-    private var calendarType: CalendarCustomizeType
-
+    private var config: CalendarCustomizeConfig
     public init(
         selectedDate: Binding<Date?>,
         selectedEndDate: Binding<Date?>,
         colorSelected: Color = .blue,
         colorUnSelected: Color = .clear,
-        calendarType: CalendarCustomizeType = .normal
+        config: CalendarCustomizeConfig = .init(
+            width: 50,
+            height: 60,
+            calendarType: .normal
+        )
     ) {
         self.colorSelected = colorSelected
         self.colorUnSelected = colorUnSelected
-        self.calendarType = calendarType
         self._selectedStartDate = selectedDate
         self._selectedEndDate = selectedEndDate
+        self.config = config
     }
 
     public var body: some View {
@@ -113,8 +110,8 @@ public struct CalendarCustomizeViewBasic: View {
                                 )
                             )
                             .frame(
-                                width: 50,
-                                height: 60
+                                width: config.width,
+                                height: config.height
                             )
                             .foregroundColor(
                                 isSelected ? .white :. black
@@ -122,9 +119,9 @@ public struct CalendarCustomizeViewBasic: View {
                             .background(
                                 isSelected ? colorSelected : (isInRange ? colorSelected.opacity(0.3) : colorUnSelected)
                             )
-                            .cornerRadius(15)
+                            .cornerRadius(config.cornerRadius)
                             .onTapGesture {
-                                if calendarType == .normal {
+                                if config.calendarType == .normal {
                                     selectedStartDate = date
                                     selectedEndDate = date
                                 } else {
@@ -132,17 +129,17 @@ public struct CalendarCustomizeViewBasic: View {
                                         selectedStartDate = date
                                         selectedEndDate = nil
                                     } else if selectedEndDate == nil {
-                                        if date < selectedStartDate! {
+                                        if date < selectedStartDate ?? Date() {
                                             selectedEndDate = nil
                                             selectedStartDate = date
                                         } else {
                                             selectedEndDate = date
                                         }
                                     } else {
-                                        if date < selectedStartDate! {
+                                        if date < selectedStartDate ?? Date() {
                                             selectedStartDate = date
                                             selectedEndDate = nil
-                                        } else if date > selectedEndDate! {
+                                        } else if date > selectedEndDate ?? Date() {
                                             selectedEndDate = date
                                         } else {
                                             selectedStartDate = date
@@ -174,8 +171,7 @@ struct CalendarView_Previews: PreviewProvider {
     static var previews: some View {
         CalendarCustomizeViewBasic(
             selectedDate: $selectedStartDate,
-            selectedEndDate: $selectedEndDate,
-            calendarType: .multiple
+            selectedEndDate: $selectedEndDate
         )
     }
 }

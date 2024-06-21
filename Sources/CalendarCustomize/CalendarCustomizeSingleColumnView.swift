@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct CalendarSingleColumnView: View {
+public struct CalendarCustomizeSingleColumnView: View {
 
     @Binding public var selectedDate: Date?
     private var colorSelected: Color
@@ -10,7 +10,7 @@ public struct CalendarSingleColumnView: View {
     @State private var hasLoadedInitially = false
     @State private var hasScrolledToEnd = false
     @State private var isViewLoaded = false
-    @State private var dates: [DateModel] = []
+    @State private var dates: [CalendarCustomizeDateModel] = []
 
     public init(
         selectedDate: Binding<Date?>,
@@ -21,9 +21,9 @@ public struct CalendarSingleColumnView: View {
         self.colorSelected = colorSelected
         self.colorUnSelected = colorUnSelected
         self._dates = State(
-            initialValue: CalendarHelper.getCalendarGrid(
+            initialValue: CalendarCustomizeHelper.getCalendarGrid(
                 for: selectedDate.wrappedValue ?? Date()
-            ).flatMap { $0.map { DateModel(date: $0) } }
+            ).flatMap { $0.map { CalendarCustomizeDateModel(date: $0) } }
         )
 
     }
@@ -35,9 +35,12 @@ public struct CalendarSingleColumnView: View {
                     HStack(spacing: 10) {
                         ForEach(dates) { dateModel in
                             if let date = dateModel.date {
-                                DateView(
+                                CalendarCustomizeDateView(
                                     date: date,
-                                    isSelected: Calendar.current.isDate(date, inSameDayAs: selectedDate ?? Date()),
+                                    isSelected: Calendar.current.isDate(
+                                        date,
+                                        inSameDayAs: selectedDate ?? Date()
+                                    ),
                                     colorSelected: colorSelected,
                                     colorUnSelected: colorUnSelected
                                 ) {
@@ -50,14 +53,14 @@ public struct CalendarSingleColumnView: View {
                         GeometryReader { geometry in
                             Color.clear
                                 .preference(
-                                    key: ScrollOffsetPreferenceKey.self,
+                                    key: CalendarCustomizeScrollOffsetPreferenceKey.self,
                                     value: geometry.frame(in: .global).maxX
                                 )
                         }
                         .frame(width: 1, height: 1)
                     }
                     .padding(.horizontal)
-                    .onPreferenceChange(ScrollOffsetPreferenceKey.self) { maxX in
+                    .onPreferenceChange(CalendarCustomizeScrollOffsetPreferenceKey.self) { maxX in
                         if isViewLoaded && !hasScrolledToEnd && maxX < UIScreen.main.bounds.width {
                             loadNextMonth()
                             hasScrolledToEnd = true
@@ -79,9 +82,9 @@ public struct CalendarSingleColumnView: View {
 
 
     private func updateDates() {
-        let newdate = CalendarHelper.getCalendarGrid(for: currentMonth)
+        let newdate = CalendarCustomizeHelper.getCalendarGrid(for: currentMonth)
         dates.append(contentsOf: newdate.flatMap{
-            $0.map{DateModel(date: $0)}
+            $0.map{CalendarCustomizeDateModel(date: $0)}
         })
     }
 
@@ -103,10 +106,10 @@ public struct CalendarSingleColumnView: View {
     }
 }
 
-struct CalendarSingleColumnView_Previews: PreviewProvider {
+struct CalendarCustomizeSingleColumnView_Previews: PreviewProvider {
     @State static var selectedDate: Date? = Date()
     static var previews: some View {
-        CalendarSingleColumnView(
+        CalendarCustomizeSingleColumnView(
             selectedDate: $selectedDate
         )
     }

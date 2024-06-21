@@ -75,7 +75,11 @@ struct ContentView: View {
             CalendarCustomizeViewBasic(
                 selectedDate: $viewModel.selectedDate,
                 selectedEndDate: $viewModel.selectedEndDate,
-                config: .init(width: 60, height: 70, calendarType: .multiple)
+                config: .init(
+                    width: 60,
+                    height: 70,
+                    calendarType: .multiple
+                )
             )
         case .single:
             CalendarCustomizeSingleColumnView(

@@ -10,6 +10,7 @@ public struct CalendarCustomizeViewBasic: View {
     private var colorSelected: Color
     private var colorUnSelected: Color
     private var config: CalendarCustomizeConfig
+
     public init(
         selectedDate: Binding<Date?>,
         selectedEndDate: Binding<Date?>,

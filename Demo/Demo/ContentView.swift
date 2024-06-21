@@ -5,7 +5,7 @@ import CalendarCustomize
 enum CalendarType {
     case single
     case basic
-    case mutiple
+    case multiple
 }
 
 class CalendarViewModel: ObservableObject {
@@ -37,7 +37,7 @@ struct ContentView: View {
         ),
         Items(
             title: "Calendar Mutiple Select",
-            type: .mutiple
+            type: .multiple
         )
     ]
 
@@ -71,14 +71,16 @@ struct ContentView: View {
                 selectedDate: $viewModel.selectedDate,
                 selectedEndDate: .constant(nil)
             )
-        case .mutiple:
+        case .multiple:
             CalendarCustomizeViewBasic(
                 selectedDate: $viewModel.selectedDate,
                 selectedEndDate: $viewModel.selectedEndDate,
                 calendarType: .multiple
             )
         case .single:
-            CalendarCustomizeSingleColumnView(selectedDate: $viewModel.selectedDate)
+            CalendarCustomizeSingleColumnView(
+                selectedDate: $viewModel.selectedDate
+            )
         }
 
     }

@@ -8,6 +8,7 @@ public enum CalendarCustomizeType {
 }
 
 public struct CalendarCustomizeViewBasic: View {
+
     //MARK: Property
     @Binding public var selectedEndDate: Date?
     @Binding public var selectedStartDate: Date?
@@ -78,13 +79,22 @@ public struct CalendarCustomizeViewBasic: View {
                 ForEach(CalendarCustomizeHelper.getCalendarGrid(for: selectedStartDate ?? Date()), id: \.self) { row in
                     ForEach(row, id: \.self) { date in
                         if let date = date {
-                            let isSelected = Calendar.current.isDate(
-                                date,
-                                inSameDayAs: selectedStartDate ?? Date()
-                            ) || Calendar.current.isDate(
-                                date,
-                                inSameDayAs: selectedEndDate ?? Date()
-                            )
+                            let isSelected: Bool = {
+                                if let startDate = selectedStartDate, let endDate = selectedEndDate {
+                                    return Calendar.current.isDate(date, inSameDayAs: startDate) ||
+                                    Calendar.current.isDate(
+                                        date,
+                                        inSameDayAs: endDate
+                                    )
+                                } else {
+                                    return Calendar.current.isDate(
+                                        date,
+                                        inSameDayAs: selectedStartDate ?? Date()
+                                    )
+                                }
+                            }()
+
+
                             let isInRange = (
                                 selectedStartDate != nil && selectedEndDate != nil
                             ) && (
@@ -114,7 +124,6 @@ public struct CalendarCustomizeViewBasic: View {
                             )
                             .cornerRadius(15)
                             .onTapGesture {
-                                print("Selected date: \(date)")
                                 if calendarType == .normal {
                                     selectedStartDate = date
                                     selectedEndDate = date
@@ -141,7 +150,6 @@ public struct CalendarCustomizeViewBasic: View {
                                         }
                                     }
                                 }
-                                print("Start Date: \(String(describing: selectedStartDate)), End Date: \(String(describing: selectedEndDate))")
                             }
 
                         } else {

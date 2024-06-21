@@ -12,7 +12,7 @@ The project consists of the following main components:
 - Users can navigate between months using navigation buttons.
 - Dates within the calendar can be selected by tapping on them.
 
-![Demo](https://raw.githubusercontent.com/codedeman/Calendar/main/ImageDemo/Simulator%20Screen%20Recording%20-%20iPhone%2015%20-%202024-06-20%20at%2014.29.23.gif)
+![Demo](https://raw.githubusercontent.com/codedeman/CalendarCustomize/main/ImageDemo/Simulator%20Screen%20Recording%20-%20iPhone%2015%20-%202024-06-21%20at%2013.49.24.gif)
 
 
 ### Helper Functions
